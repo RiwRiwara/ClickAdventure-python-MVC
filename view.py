@@ -7,7 +7,7 @@ class WelcomeView:
     def __init__(self, master, controller):
         self.master = master
         self.controller = controller
-        self.frame = Frame(self.master, width=900, height=600, padx=20, pady=20)
+        self.frame = Frame(self.master, width=500, height=600, padx=20, pady=20)
         self.frame.pack()
 
         self.name_label = Label(self.frame, text="Game", font=("Helvetica", 48))
@@ -31,49 +31,51 @@ class MenuView:
     def __init__(self, master, controller):
         self.master = master
         self.controller = controller
-        self.frame = Frame(self.master, width=400, height=300)
-        self.frame.pack(padx=20, pady=20)
+        self.frame = Frame(self.master, width=500, height=300)
+        self.frame.pack(padx=10, pady=10)
 
         # Player information
         player_info_frame = Frame(self.frame, relief=SOLID, bd=1)
         player_info_frame.pack(side=LEFT, padx=20)
 
         player_label = ttk.Label(player_info_frame, text="Player", font=("Helvetica", 18, "bold"), anchor="center")
-        player_label.pack(pady=10)
+        player_label.pack(pady=5)
 
         self.name_label = ttk.Label(player_info_frame, text=f"Name: {self.controller.gamedata.name}", font=("Helvetica", 14))
-        self.name_label.pack(pady=10)
+        self.name_label.pack(pady=5)
 
+        self.damage_label = ttk.Label(player_info_frame, text=f"Damage: {self.controller.gamedata.atk} Defense: {self.controller.gamedata.dur}", font=("Helvetica", 14))
+        self.damage_label.pack(pady=5)
         self.health_label = ttk.Label(player_info_frame, text=f"Health: {self.controller.gamedata.health}", font=("Helvetica", 14))
-        self.health_label.pack(pady=10)
+        self.health_label.pack(pady=5)
 
         self.money_label = ttk.Label(player_info_frame, text=f"Money: {self.controller.gamedata.money}", font=("Helvetica", 14))
-        self.money_label.pack(pady=10)
+        self.money_label.pack(pady=5)
 
         self.point_label = ttk.Label(player_info_frame, text=f"Point: {self.controller.gamedata.point}", font=("Helvetica", 14))
-        self.point_label.pack(pady=10)
+        self.point_label.pack(pady=5)
 
         # Buttons
         button_frame = Frame(self.frame)
         button_frame.pack(side=RIGHT)
 
         inventory_btn = ttk.Button(button_frame, text="Inventory", command=self.controller.show_inventory_view, width=20)
-        inventory_btn.pack(pady=10)
+        inventory_btn.pack(pady=5)
 
         shop_btn = ttk.Button(button_frame, text="Shop", command=self.controller.show_shop_view, width=20)
-        shop_btn.pack(pady=10)
+        shop_btn.pack(pady=5)
 
         room1_btn = ttk.Button(button_frame, text="Room 1", command=self.controller.show_room1_view, width=20)
-        room1_btn.pack(pady=10)
+        room1_btn.pack(pady=5)
 
         room2_btn = ttk.Button(button_frame, text="Room 2", command=self.controller.show_room2_view, width=20)
-        room2_btn.pack(pady=10)
+        room2_btn.pack(pady=5)
 
         room3_btn = ttk.Button(button_frame, text="Room 3", command=self.controller.show_room3_view, width=20)
-        room3_btn.pack(pady=10)
+        room3_btn.pack(pady=5)
 
         room4_btn = ttk.Button(button_frame, text="Room 4", command=self.controller.show_room4_view, width=20)
-        room4_btn.pack(pady=10)
+        room4_btn.pack(pady=5)
   
 class InventoryView:
     def __init__(self, master, controller):
@@ -144,10 +146,11 @@ class InventoryView:
         self.use_button.pack(side=LEFT, padx=5)
 
         # Create a "Drop" button
-        self.drop_button = Button(self.button_frame, text='Drop', command=self.drop_item)
+        self.drop_button = Button(self.button_frame, text='Sell', command=self.drop_item)
         self.drop_button.pack(side=LEFT, padx=5)
 
     def update(self, inventory):
+        self.items = self.controller.inventory
         # Get current scroll position
         cur_scroll_pos = self.listbox.yview()
         # Update inventory listbox
@@ -162,6 +165,7 @@ class InventoryView:
         selection = self.listbox.curselection()
 
         if selection:
+
             index = selection[0]
             
             itemName = self.listbox.get(index)
@@ -171,40 +175,39 @@ class InventoryView:
                 if (i.name==itemName):
                     itemDesc = i.desc
                     itemPrice = i.price
+                    if i.isUse:
+                        self.use_button.config(text="Unused")
+                    else:
+                        self.use_button.config(text="Use")
                     break
                     
 
             self.selected_item_name.set(itemName)
             self.selected_item_desc.set(itemDesc)
             self.selected_item_price.set(itemPrice)
-
+    def isAlreadyUse(self):
+        res = False
+        for i in self.items:
+            if i.isUse:
+                res = True
+                break
+        return res
     def use_item(self):
         selection = self.listbox.curselection()
-
         if selection:
             index = selection[0]
             name = self.listbox.get(index)
-            for i in self.items:
-                if (i.name==name):
-                    print(i.name)
-                    break
+            self.controller.useItem(name)
                     
     def drop_item(self):
-        selection = self.listbox.curselection()
+        if self.controller.decidePopup("Confirm Action", "Are you sure ?"):
+            selection = self.listbox.curselection()
 
-        if selection:
-            index = selection[0]
-            name = self.listbox.get(index)
-            pos = 0
-            for i in self.items:
-                if (i.name==name):
-                    print("Drop", i.name)
-                    self.controller.dropItem(pos)
-                    break
-                pos+=1
-            self.selected_item_name.set('')
-            self.selected_item_desc.set('')
-            self.selected_item_price.set('')
+            if selection:
+                index = selection[0]
+                name = self.listbox.get(index)
+                self.controller.sellItem(name)
+
 
 class ShopView:
     def __init__(self, master, controller):
@@ -219,10 +222,10 @@ class ShopView:
         self.items.append(Item("Pistol", "weapon", 20, 0, 100))
         self.items.append(Item("Bomb", "weapon", 50, 0, 300))
         self.items.append(Item("Sniper", "weapon", 40, 0, 250))
-        self.items.append(Item("Key", "extra", 100, 0, 0, "1"))
-        self.items.append(Item("Healing Pad", "extra", 100, 5, 0))
-        self.items.append(Item("Armour1", "def", 200, 2))
-        self.items.append(Item("Armour2", "def", 300, 3))
+        self.items.append(Item("Key", "for open treasure", 100, 0, 0, 9))
+        self.items.append(Item("Healing Pad", "health +50", 100, 5, 0, 9))
+        self.items.append(Item("Armour1", "increase defense", 200, 2, 1))
+        self.items.append(Item("Armour2", "increase defense", 300, 3, 1))
 
         self.border_frame = Frame(self.frame, bd=5, relief=GROOVE)
         self.border_frame.pack(side=TOP, fill=BOTH, expand=True)
@@ -276,11 +279,8 @@ class ShopView:
 
         # Create a "Use" button
         self.use_button = Button(self.button_frame, text='Buy', command=self.use_buy)
-        self.use_button.pack(side=LEFT, padx=5)
+        self.use_button.pack(side=RIGHT, padx=5)
 
-        # Create a "Drop" button
-        self.drop_button = Button(self.button_frame, text='Sell', command=self.drop_sell)
-        self.drop_button.pack(side=LEFT, padx=5)
 
     def show_item_details(self, event):
         selection = self.listbox.curselection()
@@ -312,17 +312,27 @@ class ShopView:
                 if (i.name==name):
                     self.controller.buyItem(i)
                     break
+class RoomView:
+    def __init__(self, master, controller, title="Sibenik", content="Welcome to Sibenik "):
+        self.master = master
+        self.controller = controller
+        self.frame = Frame(self.master, width=600, height=300, padx=20, pady=20)
+        self.frame.pack()
 
-    def drop_sell(self):
-        selection = self.listbox.curselection()
+        # Frame to display title and content
+        title_frame = Frame(self.frame)
+        title_frame.pack(side=TOP, fill=X)
 
-        if selection:
-            index = selection[0]
-            name = self.listbox.get(index)
+        # Label to display title
+        title_label = ttk.Label(title_frame, text=title, font=("Helvetica", 18, "bold"))
+        title_label.pack(side=LEFT, padx=10, pady=10)
 
-            self.listbox.delete(index)
+        # Frame to display content
+        content_frame = Frame(self.frame, relief=None, bd=0)
+        content_frame.pack(side=LEFT, fill=BOTH, expand=True)
 
-            # Clear the details label
-            self.selected_item_name.set('')
-            self.selected_item_desc.set('')
-
+        # Text widget to display room content
+        self.content_text = Text(content_frame, font=("Helvetica", 12), wrap=WORD, bg="white")
+        self.content_text.pack(side=LEFT, fill=BOTH, expand=True, padx=10, pady=10)
+        self.content_text.insert(END, content)
+        self.content_text.config(state=DISABLED)
