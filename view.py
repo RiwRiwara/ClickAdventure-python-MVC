@@ -59,23 +59,23 @@ class MenuView:
         button_frame = Frame(self.frame)
         button_frame.pack(side=RIGHT)
 
-        inventory_btn = ttk.Button(button_frame, text="Inventory", command=self.controller.show_inventory_view, width=20)
-        inventory_btn.pack(pady=5)
+        self.inventory_btn = ttk.Button(button_frame, text="Inventory", command=self.controller.show_inventory_view, width=20)
+        self.inventory_btn.pack(pady=5)
 
-        shop_btn = ttk.Button(button_frame, text="Shop", command=self.controller.show_shop_view, width=20)
-        shop_btn.pack(pady=5)
+        self.shop_btn = ttk.Button(button_frame, text="Shop", command=self.controller.show_shop_view, width=20)
+        self.shop_btn.pack(pady=5)
 
-        room1_btn = ttk.Button(button_frame, text="Room 1", command=self.controller.show_room1_view, width=20)
-        room1_btn.pack(pady=5)
+        self.room1_btn = ttk.Button(button_frame, text="Room 1", command=self.controller.show_room1_view, width=20)
+        self.room1_btn.pack(pady=5)
 
-        room2_btn = ttk.Button(button_frame, text="Room 2", command=self.controller.show_room2_view, width=20)
-        room2_btn.pack(pady=5)
+        self.room2_btn = ttk.Button(button_frame, text="Room 2", command=self.controller.show_room1_view, width=20)
+        self.room2_btn.pack(pady=5)
 
-        room3_btn = ttk.Button(button_frame, text="Room 3", command=self.controller.show_room3_view, width=20)
-        room3_btn.pack(pady=5)
+        self.room3_btn = ttk.Button(button_frame, text="Room 3", command=self.controller.show_room1_view, width=20)
+        self.room3_btn.pack(pady=5)
 
-        room4_btn = ttk.Button(button_frame, text="Room 4", command=self.controller.show_room4_view, width=20)
-        room4_btn.pack(pady=5)
+        self.room4_btn = ttk.Button(button_frame, text="Room 4", command=self.controller.show_room1_view, width=20)
+        self.room4_btn.pack(pady=5)
   
 class InventoryView:
     def __init__(self, master, controller):
@@ -174,7 +174,7 @@ class InventoryView:
             for i in self.items:
                 if (i.name==itemName):
                     itemDesc = i.desc
-                    itemPrice = i.price
+                    itemPrice = int(i.price*0.6)
                     if i.isUse:
                         self.use_button.config(text="Unused")
                     else:
@@ -217,15 +217,15 @@ class ShopView:
         self.frame.pack(padx=10, pady=30)
 
         self.items = []
-        self.items.append(Item("Knife", "weapon", 10, 0, 50 ))
-        self.items.append(Item("Rifle", "weapon", 30, 0, 150))
-        self.items.append(Item("Pistol", "weapon", 20, 0, 100))
-        self.items.append(Item("Bomb", "weapon", 50, 0, 300))
-        self.items.append(Item("Sniper", "weapon", 40, 0, 250))
+        self.items.append(Item("Knife", "Good for begining damage 10", 50, 0, 10 ))
+        self.items.append(Item("Rifle", "Medium range! Damage 30", 150, 0, 30))
+        self.items.append(Item("Pistol", "You are cowboy! damage 20", 100, 0, 20))
+        self.items.append(Item("Bomb", "Boom!", 300, 0, 50))
+        self.items.append(Item("Sniper", "Long range! 40 power", 250, 0, 40))
         self.items.append(Item("Key", "for open treasure", 100, 0, 0, 9))
-        self.items.append(Item("Healing Pad", "health +50", 100, 5, 0, 9))
-        self.items.append(Item("Armour1", "increase defense", 200, 2, 1))
-        self.items.append(Item("Armour2", "increase defense", 300, 3, 1))
+        self.items.append(Item("Healing Pad", "health +50", 30, 5, 50, 8))
+        self.items.append(Item("Armour1", "increase defense 2", 200, 2, 0, 1))
+        self.items.append(Item("Armour2", "increase defense 3", 300, 3, 0, 1))
 
         self.border_frame = Frame(self.frame, bd=5, relief=GROOVE)
         self.border_frame.pack(side=TOP, fill=BOTH, expand=True)
@@ -312,27 +312,52 @@ class ShopView:
                 if (i.name==name):
                     self.controller.buyItem(i)
                     break
+
 class RoomView:
-    def __init__(self, master, controller, title="Sibenik", content="Welcome to Sibenik "):
+    def __init__(self, master, controller):
         self.master = master
         self.controller = controller
-        self.frame = Frame(self.master, width=600, height=300, padx=20, pady=20)
+        self.frame = Frame(self.master, width=600, height=400, padx=20, pady=20)
         self.frame.pack()
+
 
         # Frame to display title and content
         title_frame = Frame(self.frame)
-        title_frame.pack(side=TOP, fill=X)
+        title_frame.pack(side=TOP)
 
         # Label to display title
-        title_label = ttk.Label(title_frame, text=title, font=("Helvetica", 18, "bold"))
-        title_label.pack(side=LEFT, padx=10, pady=10)
+        self.title_label = ttk.Label(title_frame, text=self.controller.currentRoom.title, font=("Helvetica", 18, "bold"))
+        self.title_label.pack(side=LEFT, padx=10, pady=10)
+
+        # Frame to display buttons
+        button_frame = Frame(self.frame)
+        button_frame.pack(side=BOTTOM, pady=10)
+
+        # Run button
+        self.run_btn = ttk.Button(button_frame, text="Run", command=self.controller.run)
+        self.run_btn.pack(side=LEFT, padx=10)
+
+        # Fight button
+        self.fight_btn = ttk.Button(button_frame, text="Fight", command=self.controller.fight)
+        self.fight_btn.pack(side=LEFT, padx=10)
 
         # Frame to display content
-        content_frame = Frame(self.frame, relief=None, bd=0)
-        content_frame.pack(side=LEFT, fill=BOTH, expand=True)
+        self.content_frame = Frame(self.frame, relief=None, bd=0)
+        self.content_frame.pack(side=LEFT)
 
         # Text widget to display room content
-        self.content_text = Text(content_frame, font=("Helvetica", 12), wrap=WORD, bg="white")
-        self.content_text.pack(side=LEFT, fill=BOTH, expand=True, padx=10, pady=10)
-        self.content_text.insert(END, content)
+        self.content_text = Text(self.content_frame, font=("Helvetica", 12), wrap=WORD, bg="white", height=200)
+        self.content_text.pack(side=LEFT, padx=10, pady=10)
+        for i in self.controller.currentRoom.content:
+            self.content_text.insert(END, i)
+        self.content_text.config(state=DISABLED)
+        
+    def refresh_view(self, room):
+        self.title_label.config(text=room.title)
+        self.content_text.config(state=NORMAL)
+        self.content_text.delete("1.0", END)
+        self.run_btn.config(state="normal")
+        self.fight_btn.config(state="normal")
+        for i in room.content:
+            self.content_text.insert(END, i)
         self.content_text.config(state=DISABLED)
