@@ -1,5 +1,0 @@
-/ Make use/unused item function but not specify type(code)
-X use key
-X use heal
-X check win
-X
